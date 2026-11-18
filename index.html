@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bibliotecas do Campus Higienópolis – Mackenzie</title>
+<style>
+  :root{
+    color-scheme: light;
+    --red:#c8102e; --red-dark:#9b0c23; --ink:#1f2328; --muted:#5b6470;
+    --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45}
+  header{background:var(--red);color:#fff;padding:20px 16px 18px}
+  header .wrap{max-width:1100px;margin:0 auto}
+  h1{margin:0;font-size:1.5rem;line-height:1.2}
+  .hdr{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:16px}
+  .hspacer{display:none}
+  .hlogo{width:64px;height:64px;display:block}
+  .htext{text-align:left}
+  @media (max-width:600px){header{padding:14px 16px}.hdr{grid-template-columns:44px 1fr;gap:12px}.hspacer{display:none}.hlogo{width:44px;height:44px}.htext{text-align:left}h1{font-size:1.12rem;line-height:1.25}header p{font-size:.85rem;margin-top:3px}}
+  header p{margin:6px 0 0;opacity:.92;font-size:.98rem}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .search{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+  .search label{font-weight:600;white-space:nowrap}
+  .search input{flex:1;min-width:0;font-size:1rem;padding:10px 12px;border:1px solid #c9ccd1;border-radius:8px;background:#fff;color:var(--ink)}
+  .search input:focus{outline:3px solid #f3b7c1;border-color:var(--red)}
+  .search button{font-size:.95rem;padding:10px 14px;border-radius:8px;border:1px solid #c9ccd1;background:#fff;color:var(--ink);cursor:pointer;font-weight:600}
+  .search input::placeholder{color:#8a8f97}
+  #searchMsg{margin:-4px 2px 12px;color:var(--muted);font-size:.92rem;min-height:1.2em}
+  .mapbox{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .maptools{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--muted)}
+  .maptools button{font-size:.9rem;padding:7px 12px;border-radius:8px;border:1px solid #c9ccd1;background:#fff;cursor:pointer;color:var(--ink)}
+  .scroller{position:relative;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .scroller.is-zoomed{touch-action:none;cursor:grab}
+  .scroller.is-zoomed.dragging{cursor:grabbing}
+  .map{position:relative;width:100%;min-width:0;transform-origin:0 0;--inv:1}
+  .map.anim{transition:transform .35s ease}
+  .map img{pointer-events:none;-webkit-user-drag:none}
+  .zoomreset{position:absolute;left:10px;bottom:10px;z-index:5;font-size:.85rem;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid #c9ccd1;background:rgba(255,255,255,.95);color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .map img{display:block;width:100%;height:auto}
+  .map img.maplogo{position:absolute;z-index:1;height:auto;pointer-events:none}
+  .map::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.45);pointer-events:none}
+  .pin{position:absolute;z-index:2;transform:translate(-50%,-50%) scale(var(--inv));width:clamp(30px,4.4vw,48px);height:clamp(30px,4.4vw,48px);
+       border-radius:50%;background:var(--red);color:#fff;border:3px solid #fff;font-weight:800;font-size:clamp(.72rem,1.25vw,1.05rem);
+       display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 0 3px var(--red),0 3px 10px rgba(0,0,0,.35);padding:0}
+  .pin:focus-visible{outline:4px solid #222;outline-offset:3px}
+  .pin.dim{opacity:.3}
+  .pin.active{z-index:3;transform:translate(-50%,-50%) scale(calc(1.25 * var(--inv)));background:var(--red);animation:pulse 1.6s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 3px var(--red),0 0 0 3px rgba(200,16,46,.55)}100%{box-shadow:0 0 0 3px var(--red),0 0 0 18px rgba(200,16,46,0)}}
+  @media (prefers-reduced-motion:reduce){.pin.active{animation:none;box-shadow:0 0 0 3px var(--red),0 0 0 9px rgba(200,16,46,.35)}}
+  .pin .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 12px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line)}
+  .dot{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:.65rem;font-weight:800;align-items:center;justify-content:center;vertical-align:-4px;margin-right:4px}
+  h2{font-size:1.15rem;margin:22px 2px 10px}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--red);border-radius:12px;padding:14px 14px 12px;scroll-margin-top:12px}
+  .card.hidden{display:none}
+  .card.active{border-color:#111;border-left-color:#111;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+  .card h3{margin:0 0 6px;font-size:1.02rem;line-height:1.3}
+  .badge{display:inline-block;background:#fde8eb;color:var(--red-dark);font-weight:800;font-size:1.05rem;padding:5px 14px;border-radius:999px;margin-bottom:10px}
+  .card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.93rem}
+  .card dt{color:var(--muted)}
+  .card dd{margin:0}
+  .pending{color:#8a8f97;font-style:italic}
+  .note{margin-top:8px;font-size:.88rem;background:#fff6db;border:1px solid #f1dc9b;border-radius:8px;padding:6px 9px}
+  .showmap{margin-top:10px;font-size:.88rem;padding:7px 11px;border-radius:8px;border:1px solid var(--red);background:#fff;color:var(--red-dark);cursor:pointer;font-weight:600}
+  .hours{margin-top:14px;display:flex;flex-direction:column;gap:3px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.95rem}
+  .hours .htitle{font-size:1.2rem;color:var(--red-dark);line-height:1.2}
+  .hours .hsub{font-size:.85rem;color:var(--muted);margin-bottom:4px}
+  .gate{position:absolute;z-index:1;transform:translate(-50%,-50%);min-width:clamp(24px,3.2vw,36px);height:clamp(20px,2.6vw,30px);padding:0 5px;border-radius:6px;
+        background:#1f3a5f;color:#fff;border:2px solid #fff;font-weight:800;font-size:clamp(.6rem,1vw,.85rem);display:flex;align-items:center;justify-content:center;
+        gap:2px;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .gate:focus-visible{outline:3px solid #222;outline-offset:2px}
+  .gate.active{background:#f2a900;color:#1f2328}
+  .gateinfo{padding:8px 12px;border-top:1px solid var(--line);font-size:.92rem;min-height:1.2em}
+  .gatebox{display:inline-flex;min-width:26px;height:20px;padding:0 4px;border-radius:5px;background:#1f3a5f;color:#fff;font-size:.65rem;font-weight:800;align-items:center;justify-content:center;vertical-align:-4px;margin-right:4px}
+  @media (max-width:600px){.gate .pfx{display:none}.gate{font-size:.58rem;height:18px;padding:0 4px;border-width:1.5px}}
+  .legend>span{display:inline-flex;align-items:center;gap:6px}
+  .legend .dot,.legend .gatebox{vertical-align:middle;margin:0;flex:none}
+  .legend .gatebox{min-width:22px;width:22px;height:16px;padding:0}
+  .listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:22px 2px 10px;scroll-margin-top:10px}
+  .listhead h2{margin:0}
+  #showAll{font-size:.88rem;padding:7px 11px;border-radius:8px;border:1px solid #c9ccd1;background:#fff;color:var(--ink);cursor:pointer}
+  .card{transition:opacity .2s, box-shadow .2s}
+  .has-active .card:not(.active){opacity:.4}
+  .has-active .card:not(.active):hover{opacity:.75}
+  .card.active{border:2px solid var(--red);border-left:8px solid var(--red);box-shadow:0 6px 22px rgba(200,16,46,.22)}
+  .card dd a{color:var(--red-dark);word-break:break-all}
+  .card h3 .sigla{display:block;color:var(--red-dark);font-size:1.35rem;font-weight:800;line-height:1.15;letter-spacing:.01em}
+  .card h3 .fullname{display:block;margin-top:2px;font-size:.95rem;font-weight:600;color:var(--ink)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+  .tag{display:inline-flex;align-items:center;gap:5px;background:#f0f1f2;color:#4a5058;border:1px solid #d8dbdf;font-size:.82rem;font-weight:600;padding:3px 10px 3px 8px;border-radius:999px}
+  .tag svg{width:15px;height:15px}
+  .card{display:flex;flex-direction:column;align-items:flex-start}
+  .card>h3,.card>dl,.card>.note{align-self:stretch}
+  .card .actions{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .card .showmap{margin-top:0}
+  .route{display:inline-flex;align-items:center;font-size:.88rem;padding:7px 11px;border-radius:8px;background:var(--red);color:#fff;font-weight:600;text-decoration:none;border:1px solid var(--red)}
+  .route:hover{background:var(--red-dark)}
+  .card dl,.card .note{margin-bottom:12px}
+  .hintwrap{display:flex;flex-direction:column;gap:2px}
+  .maphint{font-weight:700;color:var(--ink);font-size:1rem}
+  .mapsub{font-size:.9rem;color:var(--muted)}
+  footer{max-width:1100px;margin:0 auto;padding:18px 16px 30px;color:var(--muted);font-size:.85rem}
+  .searchrow{padding:10px 12px;border-bottom:1px solid var(--line);background:#fafafa}
+  .searchrow .search{border:0;padding:0;margin:0;background:transparent;border-radius:0}
+  .searchrow #searchMsg{margin:6px 2px 0;min-height:0}
+  .searchrow #searchMsg:empty{display:none}
+  .mini{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--red);border-radius:10px;padding:8px 12px;color:var(--ink)}
+  .mini-sigla{font-weight:800;color:var(--red-dark);font-size:1.1rem;margin-right:8px}
+  .mini-loc{font-weight:700}
+  .mini-mail a{color:var(--red-dark);word-break:break-all}
+  .mini-btn{margin-left:auto;font-size:.88rem;padding:6px 11px;border-radius:8px;border:1px solid var(--red);background:#fff;color:var(--red-dark);font-weight:600;cursor:pointer}
+  .card dl{display:flex;flex-direction:column;gap:0}
+  .card h3+dl{margin-top:12px}
+  .card dt{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:6px}
+  .card dt:first-child{margin-top:0}
+  .card dd{font-size:.95rem}
+  .wheeltip{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;background:rgba(20,22,26,.8);color:#fff;font-size:.95rem;padding:10px 16px;border-radius:10px;pointer-events:none;opacity:0;transition:opacity .25s}
+  .wheeltip.show{opacity:1}
+  .scroller.wheel-on{outline:2px solid rgba(200,16,46,.5);outline-offset:-2px}
+  .wheeltip span{font-size:.82rem;opacity:.9}
+</style>
+</head>
+<body>
+<header><div class="wrap hdr">
+  <img class="hlogo" src="logo-mackenzie-branco.png" alt="Universidade Presbiteriana Mackenzie">
+  <div class="htext">
+    <h1>Bibliotecas do Campus Higienópolis</h1>
+    <p>Saiba onde fica a biblioteca do seu curso</p>
+  </div>
+  <span class="hspacer" aria-hidden="true"></span>
+</div></header>
+
+<main>
+
+  <section class="mapbox" aria-label="Mapa do campus com as bibliotecas">
+    <div class="maptools">
+      <div class="hintwrap"><span class="maphint">Os prédios destacados em vermelho têm biblioteca.</span><span id="mapHint" class="mapsub">Clique nos círculos vermelhos para saber mais sobre as bibliotecas.</span><span id="zoomHint" class="mapsub">Use dois dedos para ampliar o mapa.</span></div>
+    </div>
+    <div class="searchrow">
+      <form class="search" id="searchForm" role="search">
+    <label for="q">Seu curso:</label>
+    <input id="q" type="search" placeholder="Ex.: Psicologia, Direito, Arquitetura" autocomplete="off">
+    <button type="button" id="clear">Limpar</button>
+  </form>
+      <div id="searchMsg" aria-live="polite"></div>
+    </div>
+    <div class="scroller" id="scroller">
+      <div class="map" id="map">
+        <img class="maplogo" src="logo-biblioteca.png" alt="Biblioteca George Alexander – Mackenzie, 100 anos (1926–2026)" style="left:73.333%;top:7.391%;width:24.242%">
+        <img src="campus.jpg" alt="Mapa do Campus Higienópolis da Universidade Presbiteriana Mackenzie, com os prédios numerados.">
+      </div>
+      <button type="button" class="zoomreset" id="zoomReset" hidden>Ver mapa inteiro</button>
+      <div class="wheeltip" id="wheelTip" aria-hidden="true"><strong>Clique no mapa para ativar o zoom</strong><span>Depois, use a rolagem do mouse para ampliar e reduzir</span></div>
+    </div>
+    <div class="legend"><span><span class="dot"></span>Prédios com biblioteca</span><span><span class="gatebox">&nbsp;</span>Portarias de entrada no campus</span></div>
+  </section>
+
+  <div class="hours" role="note"><strong class="htitle">Horário de funcionamento</strong><span><b>Segunda a sexta:</b> 7h30 às 22h</span><span><b>Sábado:</b> 9h15 às 14h45</span></div>
+  <div class="listhead" id="listHead"><h2 id="listTitle">Conheça nossas bibliotecas</h2><button type="button" id="showAll" hidden>Limpar seleção</button></div>
+  <div class="list" id="list"></div>
+</main>
+
+
+<script>
+const LIBS = [
+  {id:"central", predio:"2", sigla:"Central", nome:"Setorial de Filosofia, Letras, Educação e Psicologia", email:"biblio.central@mackenzie.br", equipe:[["Bibliotecária","MARCELA DA SILVA MATOS"]],
+   areas:"Filosofia, Letras, Educação e Psicologia", local:"Prédio 2", andar:null, x:653, y:203, kw:"central letras pedagogia psicologia filosofia educacao"},
+  {id:"eng", predio:"6", sigla:"Engenharia", nome:"Setorial Engenharia, Computação, Ciências Exatas e CRAAM", email:"biblio.enc@mackenzie.br", equipe:[["Bibliotecária","MARIA GABRIELA BRANDI TEIXEIRA"]],
+   areas:"Engenharia, Computação, Ciências Exatas e CRAAM", local:"Prédio 6", andar:"térreo", x:673, y:453, kw:"engenharia civil engenharia de materiais engenharia de producao engenharia eletrica engenharia da computacao engenharia quimica engenharia mecanica ciencia da computacao sistemas de informacao quimica craam"},
+  {id:"fau", predio:"9", sigla:"FAU", nome:"Setorial da Faculdade de Arquitetura e Urbanismo / Centro de Comunicação e Letras", email:"biblio.arca@mackenzie.br", equipe:[["Bibliotecária","PAOLA ALESSANDRA R. D’AMATO"]],
+   areas:"Arquitetura e Urbanismo, Comunicação", local:"Prédio 9", andar:"térreo", x:460, y:323, kw:"fau arquitetura e urbanismo design jornalismo publicidade e propaganda cinema e audiovisual comunicacao ccl"},
+  {id:"ccbs", predio:"38", sigla:"CCBS", nome:"Setorial de Ciências Biológicas e da Saúde", email:"biblio.ccbs@mackenzie.br", equipe:[["Bibliotecária","JAQUELINE BAY INACIO DUARTE"]],
+   areas:"Ciências Biológicas e da Saúde", local:"Prédio 38", andar:"subsolo",
+   x:872, y:791, kw:"ccbs ciencias biologicas biologia farmacia fisioterapia nutricao gastronomia tecnologo"},
+  {id:"ccsa", predio:"45", sigla:"CCSA", nome:"Setorial do Centro de Ciências Sociais e Aplicadas", email:"biblio.ccsa@mackenzie.br", equipe:[["Bibliotecária","ALINE AMARANTE PEREIRA"]],
+   areas:"Ciências Sociais e Aplicadas", local:"Prédio 45", andar:"1º subsolo",
+   x:407, y:668, kw:"ccsa administracao gestao de comercio exterior comex ciencias contabeis dual study para graduados ciencias economicas economia"},
+  {id:"direito", predio:"45", sigla:"Direito", nome:"Setorial Direito", email:"biblio.fdir@mackenzie.br", equipe:[["Bibliotecário","LUCIANO FRANCISCO DA SILVA"]],
+   areas:"Direito", local:"Prédio 45", andar:"2º subsolo",
+   x:407, y:668, kw:"direito"},
+  {id:"teo", predio:"40", sigla:"Teologia", nome:"Setorial de Teologia", email:"biblio.teologia@mackenzie.br", equipe:[["Bibliotecária","ANA MARIA FERNANDES NETA"]],
+   areas:"Teologia", local:"Prédio 40 externo – R. Maria Borba, nº 40", andar:"térreo",
+   predioNome:"Prédio Blackford", rota:"https://www.google.com/maps/search/?api=1&query=Rua+Maria+Borba,+40,+Consola%C3%A7%C3%A3o,+S%C3%A3o+Paulo+-+SP", aviso:"<strong>R. Maria Borba, nº 40</strong><br>Fica fora do campus principal.",
+   x:1533, y:732, kw:"teologia"}
+];
+const W=1650, H=1150;
+const map=document.getElementById('map'), list=document.getElementById('list');
+const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+
+// pins: one per building (45 holds two libraries)
+const byPredio={};
+LIBS.forEach(l=>{(byPredio[l.predio+'@'+l.x]=byPredio[l.predio+'@'+l.x]||[]).push(l)});
+const pins={};
+Object.values(byPredio).forEach(group=>{
+  const l=group[0];
+  const b=document.createElement('button');
+  b.type='button'; b.className='pin';
+  b.style.left=(l.x/W*100)+'%'; b.style.top=(l.y/H*100)+'%';
+  b.innerHTML=l.predio+'<span class="sr"> – '+group.map(g=>'Biblioteca '+g.sigla).join(' e ')+'</span>';
+  b.addEventListener('click',()=>select(group.map(g=>g.id),true));
+  map.appendChild(b);
+  group.forEach(g=>pins[g.id]=b);
+});
+
+// portarias
+const GATES=[
+  ["Itambé",270,315,"translate(-100%,-100%)"],["Maria Antônia",850,335,"translate(0,-100%)"],
+  ["Piauí",195,800,"translate(-100%,-50%)"],["Consolação",912,1012,"translate(-50%,0)"]];
+GATES.forEach(([nome,x,y,tf])=>{
+  const g=document.createElement('div'); g.className='gate';
+  g.style.left=(x/W*100)+'%'; g.style.top=(y/H*100)+'%';
+  g.style.transform=tf+' scale(var(--inv))'; g.style.transformOrigin={'translate(-100%,-100%)':'100% 100%','translate(0,-100%)':'0 100%','translate(-100%,-50%)':'100% 50%','translate(-50%,0)':'50% 0'}[tf]||'50% 50%'; g.textContent=nome; g.setAttribute('role','img'); g.setAttribute('aria-label','Portaria '+nome);
+  map.appendChild(g);
+});
+
+// cards
+const v=(val)=>val?val:'<span class="pending">a confirmar</span>';
+LIBS.forEach(l=>{
+  const c=document.createElement('article');
+  c.className='card'; c.id='lib-'+l.id;
+  c.innerHTML=`<span class="badge">${l.predioNome||'Prédio '+l.predio}${l.andar?' · '+l.andar:''}</span>
+  <h3><span class="sigla">${l.sigla}</span><span class="fullname">${l.nome}</span></h3>
+  ${l.id!=='central'?`<div class="tags"><span class="tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5a1.5 1.5 0 0 0 0 3H20v-1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 5.5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Sala de estudo em grupo</span></div>`:''}
+  <dl>
+    ${(l.equipe||[]).map(([cargo,nome])=>`<dt>${cargo}</dt><dd><strong>${nome}</strong></dd>`).join('')}
+    <dt>E-mail</dt><dd><a href="mailto:${l.email}">${l.email}</a></dd>
+  </dl>
+  ${l.aviso?`<div class="note">${l.aviso}</div>`:''}
+  <div class="actions"><button type="button" class="showmap">Ver no mapa</button>${l.rota?`<a class="route" href="${l.rota}" target="_blank" rel="noopener">Como chegar</a>`:''}</div>`;
+  c.querySelector('.showmap').addEventListener('click',()=>{select([l.id],false);pins[l.id].scrollIntoView({behavior:'smooth',block:'center',inline:'center'});pins[l.id].focus({preventScroll:true});});
+  list.appendChild(c);
+});
+
+function select(ids,scrollToCard){
+  document.querySelectorAll('.pin').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+  ids.forEach(id=>{pins[id].classList.add('active');document.getElementById('lib-'+id).classList.add('active')});
+  list.classList.toggle('has-active',ids.length>0);
+  document.querySelectorAll('.card').forEach(c=>c.style.order=c.classList.contains('active')?-1:0);
+  document.getElementById('showAll').hidden=ids.length===0;
+  if(ids.length&&!scrollToCard&&typeof focusPin==='function') focusPin(pins[ids[0]]);
+  if(scrollToCard) document.getElementById('listHead').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// search
+const q=document.getElementById('q'), msg=document.getElementById('searchMsg');
+function runSearch(){
+  const t=norm(q.value.trim());
+  const cards=document.querySelectorAll('.card');
+  if(!t){cards.forEach(c=>c.classList.remove('hidden'));document.querySelectorAll('.pin').forEach(p=>p.classList.remove('dim'));msg.textContent='';document.getElementById('listTitle').textContent='Conheça nossas bibliotecas';select([],false);return;}
+  const STOP=new Set(['de','da','do','das','dos','e','em','para','a','o']);
+  const toks=t.split(/[^a-z0-9]+/).filter(w=>w&&!STOP.has(w));
+  const hits=toks.length?LIBS.filter(l=>{const txt=norm(l.sigla+' '+l.areas+' '+l.kw);return toks.every(w=>txt.includes(w));}):[];
+  const ids=new Set(hits.map(h=>h.id));
+  LIBS.forEach(l=>document.getElementById('lib-'+l.id).classList.toggle('hidden',!ids.has(l.id)));
+  const hitPins=new Set(hits.map(h=>pins[h.id]));
+  document.querySelectorAll('.pin').forEach(p=>p.classList.toggle('dim',hits.length>0&&!hitPins.has(p)));
+  if(hits.length){
+    if(hits.length===1){const h=hits[0];
+      msg.innerHTML=`<div class="mini"><div><span class="mini-sigla">${h.sigla}</span><span class="mini-loc">${h.predioNome||'Prédio '+h.predio}${h.andar?' · '+h.andar:''}</span></div><div class="mini-mail"><a href="mailto:${h.email}">${h.email}</a></div><button type="button" class="mini-btn">Ver detalhes</button></div>`;
+      msg.querySelector('.mini-btn').addEventListener('click',()=>document.getElementById('lib-'+h.id).scrollIntoView({behavior:'smooth',block:'center'}));
+    } else msg.textContent=hits.length+' bibliotecas encontradas. Veja na lista abaixo do mapa.';
+    document.getElementById('listTitle').textContent=hits.length===1?'Biblioteca do seu curso':'Bibliotecas encontradas';
+    select(hits.map(h=>h.id),false);
+  }else{
+    LIBS.forEach(l=>document.getElementById('lib-'+l.id).classList.remove('hidden'));
+    msg.textContent='Não encontramos esse curso. Veja a lista abaixo ou pergunte a um bibliotecário.';
+    document.getElementById('listTitle').textContent='Conheça nossas bibliotecas';
+  }
+}
+q.addEventListener('input',runSearch);
+document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();runSearch();});
+document.getElementById('showAll').addEventListener('click',()=>{q.value='';runSearch();select([],false);resetZoom(true);});
+document.getElementById('clear').addEventListener('click',()=>{q.value='';runSearch();select([],false);resetZoom(true);q.focus();});
+
+// zoom com pinça / arrastar / toque duplo
+const scroller=document.getElementById('scroller'), zoomReset=document.getElementById('zoomReset');
+const MAXS=3, isTouch=window.matchMedia('(pointer:coarse)').matches;
+if(isTouch) document.getElementById('zoomHint').textContent='Use dois dedos para ampliar o mapa.'; else document.getElementById('zoomHint').remove();
+let S=1, TX=0, TY=0;
+function vw(){return scroller.clientWidth} function vh(){return scroller.clientHeight}
+function clamp(){
+  S=Math.min(MAXS,Math.max(1,S));
+  TX=Math.min(0,Math.max(vw()-vw()*S,TX)); TY=Math.min(0,Math.max(vh()-vh()*S,TY));
+}
+function apply(anim){
+  clamp();
+  map.classList.toggle('anim',!!anim);
+  map.style.transform=`translate(${TX}px,${TY}px) scale(${S})`;
+  map.style.setProperty('--inv',(1/S).toFixed(4));
+  const z=S>1.01; scroller.classList.toggle('is-zoomed',z); zoomReset.hidden=!z;
+}
+function zoomAt(newS,cx,cy,anim){ // cx,cy relativos ao scroller
+  newS=Math.min(MAXS,Math.max(1,newS));
+  TX=cx-(cx-TX)*(newS/S); TY=cy-(cy-TY)*(newS/S); S=newS; apply(anim);
+}
+function resetZoom(anim){S=1;TX=0;TY=0;apply(anim);}
+function focusPin(p){
+  const target=isTouch?Math.max(S,2.2):S;
+  if(target<=1.01) return;
+  const fx=parseFloat(p.style.left)/100*vw(), fy=parseFloat(p.style.top)/100*vh();
+  S=target; TX=vw()/2-fx*S; TY=vh()/2-fy*S; apply(true);
+}
+zoomReset.addEventListener('click',()=>resetZoom(true));
+window.addEventListener('resize',()=>apply(false));
+
+const pts=new Map(); let start=null, moved=false, lastTap=0, lastTapXY=null;
+function rel(e){const r=scroller.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+scroller.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.zoomreset')){moved=false;return;}
+  pts.set(e.pointerId,rel(e));
+  if(pts.size===1){start={p:rel(e),tx:TX,ty:TY}; moved=false;}
+  if(pts.size===2){const [a,b]=[...pts.values()]; start={dist:Math.hypot(a.x-b.x,a.y-b.y),s:S,mid:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},tx:TX,ty:TY}; moved=true;}
+});
+scroller.addEventListener('pointermove',e=>{
+  if(!pts.has(e.pointerId))return;
+  pts.set(e.pointerId,rel(e));
+  if(pts.size>=2&&start&&start.dist){
+    const [a,b]=[...pts.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    const ns=Math.min(MAXS,Math.max(1,start.s*d/start.dist));
+    TX=mid.x-(start.mid.x-start.tx)*(ns/start.s); TY=mid.y-(start.mid.y-start.ty)*(ns/start.s); S=ns; apply(false);
+    e.preventDefault();
+  } else if(pts.size===1&&start&&start.p&&S>1.01){
+    const p=rel(e), dx=p.x-start.p.x, dy=p.y-start.p.y;
+    if(!moved&&Math.abs(dx)+Math.abs(dy)>6){moved=true;scroller.classList.add('dragging');}
+    if(moved){TX=start.tx+dx;TY=start.ty+dy;apply(false);}
+  } else if(pts.size===1&&start&&start.p){
+    const p=rel(e); if(Math.abs(p.x-start.p.x)+Math.abs(p.y-start.p.y)>10) moved=true;
+  }
+});
+function endPtr(e){
+  if(!pts.has(e.pointerId))return;
+  const p=pts.get(e.pointerId); pts.delete(e.pointerId);
+  scroller.classList.remove('dragging');
+  if(pts.size===1){const [q2]=[...pts.values()]; start={p:q2,tx:TX,ty:TY};}
+  if(pts.size===0){
+    if(!moved&&e.type==='pointerup'&&!e.target.closest('.pin')){
+      const now=Date.now();
+      if(now-lastTap<320&&lastTapXY&&Math.hypot(p.x-lastTapXY.x,p.y-lastTapXY.y)<40){
+        if(S>1.01) resetZoom(true); else zoomAt(2.5,p.x,p.y,true);
+        lastTap=0;
+      } else {lastTap=now;lastTapXY=p;}
+    }
+    start=null;
+  }
+}
+scroller.addEventListener('pointerup',endPtr);
+scroller.addEventListener('pointercancel',endPtr);
+scroller.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+// rolagem do mouse: amplia só depois de clicar no mapa
+let wheelOn=false, tipTimer=null;
+const wheelTip=document.getElementById('wheelTip');
+function showTip(){if(isTouch)return;wheelTip.classList.add('show');clearTimeout(tipTimer);tipTimer=setTimeout(()=>wheelTip.classList.remove('show'),2200);}
+scroller.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){wheelOn=true;wheelTip.classList.remove('show');scroller.classList.add('wheel-on');}});
+scroller.addEventListener('mouseleave',()=>{wheelOn=false;scroller.classList.remove('wheel-on');wheelTip.classList.remove('show');});
+scroller.addEventListener('mouseenter',()=>{if(!wheelOn)showTip();});
+scroller.addEventListener('wheel',e=>{
+  if(!wheelOn&&!e.ctrlKey){showTip();return;}
+  e.preventDefault();
+  const dy=e.deltaY*(e.deltaMode===1?16:1);
+  const p=rel(e); zoomAt(S*Math.exp(-dy*(e.ctrlKey?0.01:0.0018)),p.x,p.y,false);
+},{passive:false});
+// impede o zoom da página inteira (Safari) quando a pinça é no mapa
+['gesturestart','gesturechange'].forEach(ev=>scroller.addEventListener(ev,e=>e.preventDefault()));
+apply(false);
+</script>
+</body>
+</html>
